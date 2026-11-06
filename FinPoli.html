@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-/* ===== Variables de tema ===== */
+
 :root {
   --bg: #f3f4f6;
   --card: #ffffff;
@@ -43,12 +43,12 @@
 body { font-family: 'Manrope', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 [hidden] { display: none !important; }
 
-/* Autenticación */
+
 .auth-container { min-height: 100vh; display: grid; place-items: center; padding: 20px; }
 .auth-card { background: var(--card); border-radius: var(--radius); padding: 32px; width: 100%; max-width: 400px; border: 1px solid var(--line); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 .auth-card h1 { font-size: 2rem; color: var(--accent); margin-bottom: 24px; font-weight: 800; text-align: center; }
 
-/* Layout App */
+
 .app-layout { display: flex; min-height: 100vh; }
 .sidebar { width: 260px; background: var(--side); color: var(--side-text); padding: 24px; display: flex; flex-direction: column; gap: 20px; }
 .sidebar h2 { font-size: 1.4rem; color: #fff; font-weight: 800; display: flex; align-items: center; gap: 8px; }
@@ -85,7 +85,7 @@ th { color: var(--muted); font-weight: 700; font-size: 0.8rem; text-transform: u
 </head>
 <body>
 
-  <!-- ============ VISTA DE AUTENTICACIÓN (LOGIN / REGISTRO) ============ -->
+  
   <div id="auth-view" class="auth-container">
     <div class="auth-card">
       <h1> FinPoli</h1>
@@ -111,7 +111,7 @@ th { color: var(--muted); font-weight: 700; font-size: 0.8rem; text-transform: u
     </div>
   </div>
 
-  <!-- ============ VISTA PRINCIPAL DE LA APP ============ -->
+  
   <div id="app-view" class="app-layout" hidden>
     <aside class="sidebar">
       <h2>🐷 FinPoli</h2>
@@ -129,7 +129,7 @@ th { color: var(--muted); font-weight: 700; font-size: 0.8rem; text-transform: u
     </aside>
 
     <main class="main-content">
-      <!-- Tab: Dashboard -->
+     
       <section id="tab-dashboard">
         <div class="grid-2">
           <div class="card">
@@ -153,7 +153,7 @@ th { color: var(--muted); font-weight: 700; font-size: 0.8rem; text-transform: u
         </div>
       </section>
 
-      <!-- Tab: Movimientos -->
+      
       <section id="tab-movements" style="display:none;">
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
@@ -184,7 +184,7 @@ th { color: var(--muted); font-weight: 700; font-size: 0.8rem; text-transform: u
         </div>
       </section>
 
-      <!-- Tab: Presupuestos -->
+      
       <section id="tab-budgets" style="display:none;">
         <div class="card">
           <h2>🎯 Presupuesto Mensual por Categoría</h2>
@@ -198,7 +198,7 @@ th { color: var(--muted); font-weight: 700; font-size: 0.8rem; text-transform: u
         </div>
       </section>
 
-      <!-- Tab: CDT -->
+      
       <section id="tab-cdt" style="display:none;">
         <div class="card">
           <h2>🏦 Simulador de CDT Estudiantil</h2>
@@ -227,7 +227,7 @@ th { color: var(--muted); font-weight: 700; font-size: 0.8rem; text-transform: u
         </div>
       </section>
 
-      <!-- Tab: Fin de Semestre -->
+      
       <section id="tab-semester" style="display:none;">
         <div class="card">
           <h2>🎓 Proyección de Fin de Semestre</h2>
@@ -250,7 +250,7 @@ th { color: var(--muted); font-weight: 700; font-size: 0.8rem; text-transform: u
         </div>
       </section>
 
-      <!-- Tab: Copia de Seguridad -->
+      
       <section id="tab-backup" style="display:none;">
         <div class="card">
           <h2>💾 Respaldo y Recuperación de Datos</h2>
