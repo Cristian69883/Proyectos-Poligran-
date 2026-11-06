@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FinPoli - Gestión Financiera Estudiantil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+/* ===== Variables de tema ===== */
+:root {
+  --bg: #f3f4f6;
+  --card: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --field: #f3f4f6;
+  --line: #e5e7eb;
+  --accent: #2430f5;
+  --accent-text: #ffffff;
+  --side: #111827;
+  --side-text: #e5e7eb;
+  --good: #15803d;
+  --bad: #b91c1c;
+  --radius: 10px;
+}
+
+[data-theme="dark"] {
+  --bg: #0b1020;
+  --card: #151b2e;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --field: #1e2640;
+  --line: #28314d;
+  --accent: #5b66ff;
+  --side: #070a14;
+  --side-text: #cbd5e1;
+  --good: #4ade80;
+  --bad: #f87171;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Manrope', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+[hidden] { display: none !important; }
+
+/* Autenticación */
+.auth-container { min-height: 100vh; display: grid; place-items: center; padding: 20px; }
+.auth-card { background: var(--card); border-radius: var(--radius); padding: 32px; width: 100%; max-width: 400px; border: 1px solid var(--line); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.auth-card h1 { font-size: 2rem; color: var(--accent); margin-bottom: 24px; font-weight: 800; text-align: center; }
+
+/* Layout App */
+.app-layout { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; background: var(--side); color: var(--side-text); padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+.sidebar h2 { font-size: 1.4rem; color: #fff; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.nav-btn { background: transparent; border: none; color: var(--side-text); padding: 12px 16px; border-radius: var(--radius); text-align: left; font-weight: 600; cursor: pointer; transition: all 0.2s; width: 100%; }
+.nav-btn.active, .nav-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.main-content { flex: 1; padding: 32px; overflow-y: auto; }
+.card { background: var(--card); border-radius: var(--radius); padding: 24px; border: 1px solid var(--line); margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.btn { background: var(--accent); color: var(--accent-text); border: none; padding: 10px 18px; border-radius: var(--radius); font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 100%; gap: 8px; font-size: 0.9rem; }
+.btn-secondary { background: var(--field); color: var(--text); border: 1px solid var(--line); }
+.btn-secondary:hover { background: var(--line); }
+.btn-excel { background: #107c41; color: white; }
+.btn-pdf { background: #d83b01; color: white; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; color: var(--muted); }
+.form-control { width: 100%; padding: 10px 14px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--field); color: var(--text); font-family: inherit; }
+.chart-container { position: relative; height: 240px; width: 100%; display: flex; justify-content: center; align-items: center; }
+.badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
+.badge-good { background: rgba(21,128,61,0.15); color: var(--good); }
+.badge-bad { background: rgba(185,28,28,0.15); color: var(--bad); }
+table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--line); font-size: 0.9rem; }
+th { color: var(--muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; }
+.msg { margin-top: 10px; font-size: 0.85rem; color: var(--bad); font-weight: 600; text-align: center; }
+.msg.ok { color: var(--good); }
+
+@media print {
+  .sidebar, .btn, .no-print { display: none !important; }
+  body { background: white; color: black; }
+  .main-content { padding: 0; }
+  .card { border: none; box-shadow: none; }
+}
+  </style>
+</head>
+<body>
+
+  <!-- ============ VISTA DE AUTENTICACIÓN (LOGIN / REGISTRO) ============ -->
+  <div id="auth-view" class="auth-container">
+    <div class="auth-card">
+      <h1> FinPoli</h1>
+      <form id="auth-form" onsubmit="handleAuth(event)">
+        <div class="form-group" id="name-group" hidden>
+          <label>Nombre Completo</label>
+          <input type="text" id="auth-name" class="form-control" placeholder="Tu nombre">
+        </div>
+        <div class="form-group">
+          <label>Correo Electrónico</label>
+          <input type="email" id="auth-email" class="form-control" placeholder="estudiante@poligran.edu.co" required>
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="auth-pass" class="form-control" placeholder="Mínimo 6 caracteres" required>
+        </div>
+        <p id="auth-msg" class="msg" hidden></p>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button type="submit" class="btn" style="flex:1;" id="auth-submit-btn">Iniciar Sesión</button>
+          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="toggleAuthMode()" id="auth-toggle-btn">Crear Cuenta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ VISTA PRINCIPAL DE LA APP ============ -->
+  <div id="app-view" class="app-layout" hidden>
+    <aside class="sidebar">
+      <h2>🐷 FinPoli</h2>
+      <button class="nav-btn active" onclick="switchTab('dashboard')">📊 Resumen General</button>
+      <button class="nav-btn" onclick="switchTab('movements')">💸 Movimientos</button>
+      <button class="nav-btn" onclick="switchTab('budgets')">🎯 Presupuestos</button>
+      <button class="nav-btn" onclick="switchTab('cdt')">🏦 Simulador CDT</button>
+      <button class="nav-btn" onclick="switchTab('semester')">🎓 Fin de Semestre</button>
+      <button class="nav-btn" onclick="switchTab('backup')">💾 Copia de Seguridad</button>
+      
+      <div style="margin-top:auto; display:flex; flex-direction:column; gap:8px;">
+        <button class="nav-btn" onclick="toggleTheme()" id="theme-btn">🌓 Cambiar Tema</button>
+        <button class="nav-btn" onclick="logout()" style="color:var(--bad);">🚪 Cerrar Sesión</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <!-- Tab: Dashboard -->
+      <section id="tab-dashboard">
+        <div class="grid-2">
+          <div class="card">
+            <span style="color:var(--muted); font-size:0.85rem; font-weight:700;">BALANCE GENERAL</span>
+            <h1 id="total-balance" style="font-size:2.5rem; margin:8px 0; color:var(--accent);">$0</h1>
+            <div style="display:flex; gap:16px; margin-top:12px;">
+              <div><small style="color:var(--muted);">Ingresos</small><p id="total-income" style="color:var(--good); font-weight:700;">+$0</p></div>
+              <div><small style="color:var(--muted);">Gastos</small><p id="total-expense" style="color:var(--bad); font-weight:700;">-$0</p></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:12px;">📊 Distribución de Gastos</h3>
+            <div class="chart-container">
+              <canvas id="expenseChart" width="220" height="220"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>⚠️ Alertas de Presupuesto Mensual</h3>
+          <div id="budget-alerts" style="margin-top:12px;">Paso libre. No tienes alertas de presupuesto activas.</div>
+        </div>
+      </section>
+
+      <!-- Tab: Movimientos -->
+      <section id="tab-movements" style="display:none;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+            <h2>Historial de Movimientos</h2>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="month" id="filter-month" class="form-control" style="width:auto;" onchange="renderMovements()">
+              <button class="btn btn-excel" onclick="exportExcel()">🟢 Excel (CSV)</button>
+              <button class="btn btn-pdf" onclick="exportPDF()">🔴 PDF Imprimir</button>
+            </div>
+          </div>
+          <form id="movement-form" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-bottom:20px;">
+            <input type="date" id="mov-date" class="form-control" required>
+            <select id="mov-type" class="form-control" onchange="updateCategories()">
+              <option value="gasto">Gasto</option>
+              <option value="ingreso">Ingreso</option>
+            </select>
+            <select id="mov-cat" class="form-control" required></select>
+            <input type="number" id="mov-amount" class="form-control" placeholder="Monto COP" required min="1">
+            <input type="text" id="mov-desc" class="form-control" placeholder="Descripción">
+            <button type="submit" class="btn">+ Agregar</button>
+          </form>
+          <table>
+            <thead>
+              <tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Descripción</th><th>Monto</th><th>Acción</th></tr>
+            </thead>
+            <tbody id="movements-list"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Tab: Presupuestos -->
+      <section id="tab-budgets" style="display:none;">
+        <div class="card">
+          <h2>🎯 Presupuesto Mensual por Categoría</h2>
+          <p style="color:var(--muted); font-size:0.85rem; margin-bottom:16px;">Establece límites para evitar sobrecostos en tus finanzas estudiantiles.</p>
+          <form id="budget-form" style="display:flex; gap:12px; margin-bottom:20px;">
+            <select id="budget-cat" class="form-control" style="max-width:200px;"></select>
+            <input type="number" id="budget-limit" class="form-control" placeholder="Límite Mensual ($ COP)" required>
+            <button type="submit" class="btn">Guardar Límite</button>
+          </form>
+          <div id="budgets-list"></div>
+        </div>
+      </section>
+
+      <!-- Tab: CDT -->
+      <section id="tab-cdt" style="display:none;">
+        <div class="card">
+          <h2>🏦 Simulador de CDT Estudiantil</h2>
+          <p style="color:var(--muted); font-size:0.85rem; margin-bottom:16px;">Calcula los rendimientos de tu dinero disponible sujeto a la retención en la fuente (4%).</p>
+          <div class="grid-2">
+            <div>
+              <div class="form-group"><label>Monto a Invertir ($ COP)</label><input type="number" id="cdt-amount" class="form-control" value="500000" min="100000"></div>
+              <div class="form-group"><label>Plazo (Días)</label><input type="number" id="cdt-days" class="form-control" value="180"></div>
+              <div class="form-group">
+                <label>Entidad Bancaria</label>
+                <select id="cdt-bank" class="form-control">
+                  <option value="11.09">Banco de Bogotá (11.09% E.A.)</option>
+                  <option value="10.84">Davivienda (10.84% E.A.)</option>
+                  <option value="10.41">Bancolombia (10.41% E.A.)</option>
+                </select>
+              </div>
+              <button class="btn" onclick="calculateCDT()">Simular Inversión</button>
+            </div>
+            <div id="cdt-result" style="background:var(--field); padding:16px; border-radius:var(--radius);">
+              <h4>Resultado Estimado</h4>
+              <p style="margin-top:12px;"><small>Ganancia Bruta:</small> <strong id="cdt-gross">$0</strong></p>
+              <p><small>Retención (4%):</small> <strong id="cdt-tax" style="color:var(--bad);">$0</strong></p>
+              <p style="font-size:1.1rem; margin-top:8px;"><small>Ganancia Neta Real:</small> <strong id="cdt-net" style="color:var(--good);">$0</strong></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab: Fin de Semestre -->
+      <section id="tab-semester" style="display:none;">
+        <div class="card">
+          <h2>🎓 Proyección de Fin de Semestre</h2>
+          <p style="color:var(--muted); font-size:0.85rem; margin-bottom:16px;">Calcula cuánto dinero te queda por día hasta terminar tus clases.</p>
+          <div class="form-group">
+            <label>Saldo Inicial Disponible</label>
+            <div style="display:flex; gap:8px;">
+              <input type="number" id="sem-balance" class="form-control" placeholder="Monto COP">
+              <button type="button" class="btn btn-secondary" onclick="useCurrentBalance()">Usar mi balance actual</button>
+            </div>
+          </div>
+          <div class="form-group"><label>Días Restantes de Semestre</label><input type="number" id="sem-days" class="form-control" value="60"></div>
+          <button class="btn" onclick="calcSemester()">Calcular Presupuesto Diario</button>
+          <div id="sem-result" style="margin-top:16px;" hidden>
+            <div class="card" style="background:var(--field);">
+              <small>Presupuesto Diario Máximo Recomendado:</small>
+              <h2 id="sem-daily" style="color:var(--good);">$0 / día</h2>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab: Copia de Seguridad -->
+      <section id="tab-backup" style="display:none;">
+        <div class="card">
+          <h2>💾 Respaldo y Recuperación de Datos</h2>
+          <p style="color:var(--muted); font-size:0.85rem; margin-bottom:16px;">Guarda una copia de seguridad en tu equipo o restaura una copia previa.</p>
+          <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            <div>
+              <h4>Exportar Copia de Seguridad</h4>
+              <button class="btn" style="margin-top:8px;" onclick="exportBackup()">📥 Descargar Respaldo JSON</button>
+            </div>
+            <div style="border-left:1px solid var(--line); padding-left:16px;">
+              <h4>Importar Copia de Seguridad</h4>
+              <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importBackup(event)">
+              <button class="btn btn-secondary" style="margin-top:8px;" onclick="document.getElementById('import-file').click()">📤 Cargar Respaldo JSON</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+'use strict';
+
+const CATEGORIES = {
+  gasto: ['Comida', 'Transporte', 'Vivienda', 'Servicios', 'Educación', 'Salud', 'Ocio', 'Otros'],
+  ingreso: ['Mesada', 'Salario', 'Trabajo extra', 'Otros']
+};
+
+let currentUser = null;
+let isRegisterMode = false;
+let movements = [];
+let budgets = {};
+
+function init() {
+  const savedUser = sessionStorage.getItem('finpoli:session');
+  if (savedUser) {
+    currentUser = savedUser;
+    loadUserData();
+    showApp();
+  }
+}
+
+function toggleAuthMode() {
+  isRegisterMode = !isRegisterMode;
+  document.getElementById('name-group').hidden = !isRegisterMode;
+  document.getElementById('auth-submit-btn').textContent = isRegisterMode ? 'Registrarse' : 'Iniciar Sesión';
+  document.getElementById('auth-toggle-btn').textContent = isRegisterMode ? 'Tengo una cuenta' : 'Crear Cuenta';
+  document.getElementById('auth-msg').hidden = true;
+}
+
+function handleAuth(e) {
+  e.preventDefault();
+  const email = document.getElementById('auth-email').value.trim().toLowerCase();
+  const pass = document.getElementById('auth-pass').value;
+  const name = document.getElementById('auth-name').value.trim();
+  const msgEl = document.getElementById('auth-msg');
+
+  let users = JSON.parse(localStorage.getItem('finpoli:users')) || {};
+
+  if (isRegisterMode) {
+    if (!name) { msgEl.textContent = 'Escribe tu nombre.'; msgEl.hidden = false; return; }
+    if (users[email]) { msgEl.textContent = 'El correo ya está registrado.'; msgEl.hidden = false; return; }
+    users[email] = { name, pass };
+    localStorage.setItem('finpoli:users', JSON.stringify(users));
+  } else {
+    if (!users[email] || users[email].pass !== pass) {
+      msgEl.textContent = 'Correo o contraseña incorrectos.';
+      msgEl.hidden = false;
+      return;
+    }
+  }
+
+  currentUser = email;
+  sessionStorage.setItem('finpoli:session', email);
+  loadUserData();
+  showApp();
+}
+
+function logout() {
+  sessionStorage.removeItem('finpoli:session');
+  currentUser = null;
+  document.getElementById('app-view').hidden = true;
+  document.getElementById('auth-view').hidden = false;
+  document.getElementById('auth-form').reset();
+}
+
+function showApp() {
+  document.getElementById('auth-view').hidden = true;
+  document.getElementById('app-view').hidden = false;
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('mov-date').value = today;
+  document.getElementById('filter-month').value = today.substring(0, 7);
+  updateCategories();
+  renderAll();
+}
+
+function loadUserData() {
+  movements = JSON.parse(localStorage.getItem(`finpoli:movs:${currentUser}`)) || [];
+  budgets = JSON.parse(localStorage.getItem(`finpoli:budgets:${currentUser}`)) || {};
+}
+
+function saveData() {
+  if (!currentUser) return;
+  localStorage.setItem(`finpoli:movs:${currentUser}`, JSON.stringify(movements));
+  localStorage.setItem(`finpoli:budgets:${currentUser}`, JSON.stringify(budgets));
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.main-content > section').forEach(s => s.style.display = 'none');
+  document.querySelectorAll('.sidebar .nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tabId).style.display = 'block';
+  event.target.classList.add('active');
+  if(tabId === 'dashboard') renderChart();
+}
+
+function updateCategories() {
+  const type = document.getElementById('mov-type').value;
+  const select = document.getElementById('mov-cat');
+  select.innerHTML = CATEGORIES[type].map(c => `<option value="${c}">${c}</option>`).join('');
+  const bSelect = document.getElementById('budget-cat');
+  if(bSelect) bSelect.innerHTML = CATEGORIES.gasto.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+document.getElementById('movement-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const mov = {
+    id: Date.now(),
+    date: document.getElementById('mov-date').value,
+    type: document.getElementById('mov-type').value,
+    category: document.getElementById('mov-cat').value,
+    amount: parseFloat(document.getElementById('mov-amount').value),
+    desc: document.getElementById('mov-desc').value
+  };
+  movements.push(mov);
+  saveData();
+  renderAll();
+  document.getElementById('mov-amount').value = '';
+  document.getElementById('mov-desc').value = '';
+});
+
+function deleteMovement(id) {
+  movements = movements.filter(m => m.id !== id);
+  saveData();
+  renderAll();
+}
+
+function renderAll() {
+  renderSummary();
+  renderMovements();
+  renderBudgets();
+  renderChart();
+}
+
+function renderSummary() {
+  const income = movements.filter(m => m.type === 'ingreso').reduce((a, b) => a + b.amount, 0);
+  const expense = movements.filter(m => m.type === 'gasto').reduce((a, b) => a + b.amount, 0);
+  const balance = income - expense;
+
+  document.getElementById('total-balance').textContent = `$${balance.toLocaleString('es-CO')}`;
+  document.getElementById('total-income').textContent = `+$${income.toLocaleString('es-CO')}`;
+  document.getElementById('total-expense').textContent = `-$${expense.toLocaleString('es-CO')}`;
+}
+
+function renderMovements() {
+  const monthFilter = document.getElementById('filter-month').value;
+  const tbody = document.getElementById('movements-list');
+  const filtered = movements.filter(m => !monthFilter || m.date.startsWith(monthFilter));
+  
+  tbody.innerHTML = filtered.map(m => `
+    <tr>
+      <td>${m.date}</td>
+      <td><span class="badge ${m.type === 'ingreso' ? 'badge-good' : 'badge-bad'}">${m.type.toUpperCase()}</span></td>
+      <td>${m.category}</td>
+      <td>${m.desc || '-'}</td>
+      <td style="font-weight:700; color:${m.type === 'ingreso' ? 'var(--good)' : 'var(--bad)'}">${m.type === 'ingreso' ? '+' : '-'}$${m.amount.toLocaleString('es-CO')}</td>
+      <td><button class="btn btn-secondary" style="padding:4px 8px; font-size:0.75rem;" onclick="deleteMovement(${m.id})">🗑️</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderChart() {
+  const canvas = document.getElementById('expenseChart');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const expenses = movements.filter(m => m.type === 'gasto');
+  const catTotals = {};
+  expenses.forEach(e => catTotals[e.category] = (catTotals[e.category] || 0) + e.amount);
+  
+  const total = Object.values(catTotals).reduce((a, b) => a + b, 0);
+  if(total === 0) {
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '14px Manrope';
+    ctx.fillText('Sin gastos registrados', 40, 110);
+    return;
+  }
+
+  const colors = ['#2430f5', '#107c41', '#d83b01', '#e3a008', '#8b5cf6', '#ec4899', '#64748b'];
+  let startAngle = 0;
+  let colorIdx = 0;
+
+  Object.entries(catTotals).forEach(([cat, amt]) => {
+    const sliceAngle = (amt / total) * 2 * Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(110, 110);
+    ctx.arc(110, 110, 90, startAngle, startAngle + sliceAngle);
+    ctx.closePath();
+    ctx.fillStyle = colors[colorIdx % colors.length];
+    ctx.fill();
+    startAngle += sliceAngle;
+    colorIdx++;
+  });
+}
+
+function useCurrentBalance() {
+  const income = movements.filter(m => m.type === 'ingreso').reduce((a, b) => a + b.amount, 0);
+  const expense = movements.filter(m => m.type === 'gasto').reduce((a, b) => a + b.amount, 0);
+  document.getElementById('sem-balance').value = Math.max(0, income - expense);
+}
+
+function calcSemester() {
+  const bal = parseFloat(document.getElementById('sem-balance').value) || 0;
+  const days = parseInt(document.getElementById('sem-days').value) || 1;
+  const daily = Math.floor(bal / days);
+  document.getElementById('sem-daily').textContent = `$${daily.toLocaleString('es-CO')} / día`;
+  document.getElementById('sem-result').hidden = false;
+}
+
+document.getElementById('budget-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const cat = document.getElementById('budget-cat').value;
+  const limit = parseFloat(document.getElementById('budget-limit').value);
+  budgets[cat] = limit;
+  saveData();
+  renderBudgets();
+});
+
+document.getElementById('budget-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const cat = document.getElementById('budget-cat').value;
+  const limit = parseFloat(document.getElementById('budget-limit').value);
+  
+  if (!limit || limit <= 0) return;
+
+  budgets[cat] = limit;
+  saveData();
+  renderBudgets();
+  document.getElementById('budget-limit').value = '';
+});
+
+function renderBudgets() {
+  const container = document.getElementById('budgets-list');
+  const alertsContainer = document.getElementById('budget-alerts');
+  const currentMonth = new Date().toISOString().substring(0, 7);
+  
+  let alertsHTML = '';
+  let html = '';
+
+  const activeCategories = CATEGORIES.gasto;
+
+  activeCategories.forEach((cat) => {
+    const limit = budgets[cat] || 0;
+    
+    const spent = movements
+      .filter(m => m.type === 'gasto' && (m.category === cat || m.cat === cat) && m.date && m.date.startsWith(currentMonth))
+      .reduce((acc, curr) => acc + curr.amount, 0);
+
+    if (limit > 0) {
+      const pct = Math.min(100, Math.round((spent / limit) * 100));
+      const isExceeded = spent > limit;
+
+      if (isExceeded) {
+        alertsHTML += `<div style="color:var(--bad); margin-bottom:6px; font-weight:700;">⚠️ Has superado el presupuesto en <b>${cat}</b>: Gastado $${spent.toLocaleString('es-CO')} / Límite $${limit.toLocaleString('es-CO')}</div>`;
+      }
+
+      html += `
+        <div style="margin-bottom:16px; background:var(--field); padding:12px; border-radius:8px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; margin-bottom:6px;">
+            <span>${cat}</span>
+            <span>$${spent.toLocaleString('es-CO')} / $${limit.toLocaleString('es-CO')} (${pct}%)</span>
+          </div>
+          <div style="background:var(--line); height:8px; border-radius:4px; overflow:hidden;">
+            <div style="background:${isExceeded ? 'var(--bad)' : 'var(--accent)'}; width:${pct}%; height:100%; transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+      `;
+    }
+  });
+
+  if (container) {
+    container.innerHTML = html || '<p style="color:var(--muted); font-size:0.85rem;">No has configurado límites de presupuesto para este mes. Selecciona una categoría arriba y asígnale un tope.</p>';
+  }
+  if (alertsContainer) {
+    alertsContainer.innerHTML = alertsHTML || '<p style="color:var(--good); font-weight:700;">✅ Todo en orden. Estás cumpliendo tus límites presupuestales del mes.</p>';
+  }
+}
+
+function calculateCDT() {
+  const amount = parseFloat(document.getElementById('cdt-amount').value);
+  const days = parseInt(document.getElementById('cdt-days').value);
+  const ea = parseFloat(document.getElementById('cdt-bank').value) / 100;
+  
+  const gross = amount * (Math.pow(1 + ea, days / 365) - 1);
+  const tax = gross * 0.04;
+  const net = gross - tax;
+
+  document.getElementById('cdt-gross').textContent = `$${Math.round(gross).toLocaleString('es-CO')}`;
+  document.getElementById('cdt-tax').textContent = `-$${Math.round(tax).toLocaleString('es-CO')}`;
+  document.getElementById('cdt-net').textContent = `+$${Math.round(net).toLocaleString('es-CO')}`;
+}
+
+function exportBackup() {
+  const data = { movements, budgets, date: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `finpoli_backup_${currentUser}_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+}
+
+function importBackup(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const data = JSON.parse(evt.target.result);
+      if(data.movements) movements = data.movements;
+      if(data.budgets) budgets = data.budgets;
+      saveData();
+      renderAll();
+      alert('¡Respaldo cargado con éxito!');
+    } catch(err) {
+      alert('Error al leer el archivo JSON.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function exportExcel() {
+  const monthFilter = document.getElementById('filter-month').value;
+  const filtered = movements.filter(m => !monthFilter || m.date.startsWith(monthFilter));
+  let csv = 'Fecha,Tipo,Categoria,Descripcion,Monto (COP)\n';
+  filtered.forEach(m => {
+    csv += `"${m.date}","${m.type}","${m.category}","${m.desc || ''}",${m.amount}\n`;
+  });
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `movimientos_finpoli_${monthFilter || 'todos'}.csv`;
+  a.click();
+}
+
+function exportPDF() {
+  window.print();
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+}
+
+
+init();
+  </script>
+</body>
+</html>
