@@ -1,0 +1,107 @@
+public class Apostador {
+   private String nombre;
+    private int id;
+    private int edad;
+    private String correo;
+    private String celular;
+    private double totalApostado;
+    private double totalGanado;
+    private String juegoFav;
+    private String frecuencia;
+    private String estado;
+    
+    public Apostador() {
+        nombre = "Sin nombre";
+        id = 0;
+        edad = 18;
+        correo = "No tiene";
+        celular = "0000000000";
+        totalApostado = 0;
+        totalGanado = 0;
+        juegoFav = "Ninguno";
+        frecuencia = "ocasional";
+        estado = "activa";
+    }
+
+    public Apostador(String nombre, int id, int edad, String correo, String celular, double totalApostado, double totalGanado, String juegoFav, String frecuencia, String estado) {
+        this.nombre = nombre;
+        this.id = id;
+        this.edad = edad;
+        this.correo = correo;
+        this.celular = celular;
+        this.totalApostado = totalApostado;
+        this.totalGanado = totalGanado;
+        this.juegoFav = juegoFav;
+        this.frecuencia = frecuencia;
+        this.estado = estado;
+    }
+    
+    public Apostador(String nombre, int id, int edad, String correo, String celular) {
+        this(nombre, id, edad, correo, celular, 0, 0, "Ninguno", "ocasional", "activa");
+    }
+    
+    public void mostrarInfo() {
+        System.out.println("ID: " + id + ", Nombre: " + nombre + ", Correo: " + correo + ", Tel: " + celular);
+    }
+    
+    public void cambiarDatos(String nuevoCorreo, String nuevoCelular) {
+        correo = nuevoCorreo;
+        celular = nuevoCelular;
+    }
+    
+    public boolean esMayor() {
+        return edad >= 18;
+    }
+    
+    public void registrarApuesta(double monto) {
+        totalApostado += monto;
+    }
+    
+    public double calcularGanancia() {
+        return totalGanado - totalApostado;
+    }
+    
+    public void cambiarEstado() {
+        estado = estado.equals("activa") ? "suspendida" : "activa";
+    }
+    
+    public int validarJuego() {
+        if (juegoFav.equalsIgnoreCase("loteria") || juegoFav.equalsIgnoreCase("ruleta")) return 3;
+        if (juegoFav.equalsIgnoreCase("bingo")) return 1;
+        return 0;
+    }
+    
+    public void mensajeFrecuencia() {
+        if (frecuencia.equalsIgnoreCase("diaria")) {
+            System.out.println("Debes controlarte");
+        } else if (frecuencia.equalsIgnoreCase("semanal")) {
+            System.out.println("Ten cuidado con no aumentar");
+        } else {
+            System.out.println("Sigue así");
+        }
+    }
+}
+
+public class Pruebamain {
+
+   
+    public static void main(String[] args) {
+        Apostador a1 = new Apostador();
+        Apostador a2 = new Apostador("Jairo", 101, 25, "jairo@gmail.com", "123456789", 5000, 7000, "loteria", "diaria", "activa");
+        Apostador a3 = new Apostador("Cristian", 102, 30, "cristian@gmail.com", "987654321", 3000, 5000, "ruleta", "semanal", "activa");
+        Apostador a4 = new Apostador("Elian", 103, 20, "elian@gmail.com", "654321987");
+        Apostador a5 = new Apostador("Juan", 104, 22, "juan@gmail.com", "321654987");
+        Apostador a6 = new Apostador("Samuel", 105, 28, "samuel@gmail.com", "852741963", 10000, 15000, "bingo", "ocasional", "activa");
+        Apostador a7 = new Apostador("Ana", 106, 19, "ana@gmail.com", "369852147", 2000, 2500, "poker", "semanal", "activa");
+        Apostador a8 = new Apostador("Katherin", 107, 27, "katherin@gmail.com", "159753486", 7000, 9500, "loteria", "diaria", "suspendida");
+        
+        a1.mostrarInfo();
+        a2.mostrarInfo();
+        a3.mostrarInfo();
+        a4.mostrarInfo();
+        a5.mostrarInfo();
+        a6.mostrarInfo();
+        a7.mostrarInfo();
+        a8.mostrarInfo();
+    }
+}
